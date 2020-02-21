@@ -111,7 +111,8 @@ ProcSyms::ProcSyms(int pid, struct bcc_symbol_option *option)
       .use_debug_file = 1,
       .check_debug_file_crc = 1,
       .lazy_symbolize = 1,
-      .use_symbol_type = (1 << STT_FUNC) | (1 << STT_GNU_IFUNC)
+      .use_symbol_type = (1 << STT_FUNC) | (1 << STT_GNU_IFUNC),
+      .use_absolute_offset = 0
     };
   load_modules();
 }
@@ -414,7 +415,9 @@ bool ProcSyms::Module::find_addr(uint64_t offset, struct bcc_symbol *sym) {
       }
 
       sym->name = it->data.name->c_str();
-      sym->offset = (offset - it->start);
+      if(!symbol_option_->use_absolute_offset) {
+        sym->offset = (offset - it->start);
+      }
       return true;
     }
     if (limit > it->start + it->size)
@@ -436,7 +439,8 @@ bool BuildSyms::Module::load_sym_table()
     .use_debug_file = 1,
     .check_debug_file_crc = 1,
     .lazy_symbolize = 1,
-    .use_symbol_type = (1 << STT_FUNC) | (1 << STT_GNU_IFUNC)
+    .use_symbol_type = (1 << STT_FUNC) | (1 << STT_GNU_IFUNC),
+    .use_absolute_offset = 0
   };
 
   bcc_elf_foreach_sym(module_name_.c_str(), _add_symbol, &symbol_option_, this);
@@ -672,7 +676,8 @@ int bcc_foreach_function_symbol(const char *module, SYM_CB cb) {
     .use_debug_file = 1,
     .check_debug_file_crc = 1,
     .lazy_symbolize = 1,
-    .use_symbol_type = (1 << STT_FUNC) | (1 << STT_GNU_IFUNC)
+    .use_symbol_type = (1 << STT_FUNC) | (1 << STT_GNU_IFUNC),
+    .use_absolute_offset = 0
   };
 
   return bcc_elf_foreach_sym(
@@ -716,6 +721,7 @@ int bcc_resolve_symname(const char *module, const char *symname,
 #else
     .use_symbol_type = BCC_SYM_ALL_TYPES,
 #endif
+    .use_absolute_offset = 0
   };
 
   if (module == NULL)

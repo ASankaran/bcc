@@ -52,6 +52,9 @@ struct bcc_symbol_option {
   int lazy_symbolize;
   // Bitmask flags indicating what types of ELF symbols to use
   uint32_t use_symbol_type;
+  // Indicates to return the offset from the file base instead
+  // of the symbol. This is useful for pie executables
+  int use_absolute_offset;
 };
 
 void *bcc_symcache_new(int pid, struct bcc_symbol_option *option);
