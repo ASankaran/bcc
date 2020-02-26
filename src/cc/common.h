@@ -39,4 +39,6 @@ std::vector<int> get_possible_cpus();
 
 std::string get_pid_exe(pid_t pid);
 
+std::string get_debug_line_info(std::string module_name, uint64_t addr);
+
 }  // namespace ebpf

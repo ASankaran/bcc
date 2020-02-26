@@ -19,6 +19,10 @@
 #include "common.h"
 #include "vendor/tinyformat.hpp"
 
+#include <llvm/DebugInfo/Symbolize/Symbolize.h>
+#include <llvm/Object/ObjectFile.h>
+
+
 namespace ebpf {
 
 std::vector<int> read_cpu_range(std::string path) {
@@ -61,6 +65,17 @@ std::string get_pid_exe(pid_t pid) {
     res = sizeof(exe_path) - 1;
   exe_path[res] = '\0';
   return std::string(exe_path);
+}
+
+std::string get_debug_line_info(std::string module_name, uint64_t addr) {
+	llvm::symbolize::LLVMSymbolizer::Options opts;
+	llvm::symbolize::LLVMSymbolizer symbolizer(opts);
+	auto res = symbolizer.symbolizeCode(module_name, addr);
+	if(!res) {
+		return "[UNKNOWN]";
+	}
+	auto line_info = res.get();
+	return line_info.FileName + ":" + std::to_string(line_info.Line);
 }
 
 } // namespace ebpf
