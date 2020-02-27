@@ -318,6 +318,33 @@ std::vector<std::string> BPFStackTable::get_stack_symbol(int stack_id,
   return res;
 }
 
+std::vector<std::string> BPFStackTable::get_stack_debug(int stack_id,
+                                                        int pid) {
+  auto addresses = get_stack_addr(stack_id);
+  std::vector<std::string> res;
+  if (addresses.empty())
+    return res;
+  res.reserve(addresses.size());
+
+  if (pid < 0)
+    pid = -1;
+  bcc_symbol_option symbol_option = symbol_option_;
+  symbol_option.use_absolute_offset = 1;
+  void* cache = bcc_symcache_new(pid, &symbol_option);
+
+  bcc_symbol symbol;
+  for (auto addr : addresses)
+    if (bcc_symcache_resolve(cache, addr, &symbol) != 0)
+      res.emplace_back("[UNKNOWN]:??");
+    else {
+      auto debug_info = get_debug_line_info(std::string(symbol.module), symbol.offset);
+      res.push_back(debug_info);
+      bcc_symbol_free_demangle_name(&symbol);
+    }
+
+  return res;
+}
+
 BPFStackBuildIdTable::BPFStackBuildIdTable(const TableDesc& desc, bool use_debug_file,
                                            bool check_debug_file_crc,
                                            void *bsymcache)
