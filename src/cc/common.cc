@@ -70,12 +70,19 @@ std::string get_pid_exe(pid_t pid) {
 std::string get_debug_line_info(std::string module_name, uint64_t addr) {
 	llvm::symbolize::LLVMSymbolizer::Options opts;
 	llvm::symbolize::LLVMSymbolizer symbolizer(opts);
-	auto res = symbolizer.symbolizeCode(module_name, addr);
+	auto res = symbolizer.symbolizeInlinedCode(module_name, addr);
 	if(!res) {
-		return "[UNKNOWN]";
+		return "[UNKNOWN]:??";
 	}
 	auto line_info = res.get();
-	return line_info.FileName + ":" + std::to_string(line_info.Line);
+	std::string debug_info("");
+	for(uint32_t i = 0; i < line_info.getNumberOfFrames(); i++) {
+		debug_info += line_info.getFrame(i).FileName + ":" + std::to_string(line_info.getFrame(i).Line);
+		if(i != line_info.getNumberOfFrames() - 1) {
+			debug_info += ";";
+		}
+	}
+	return debug_info;
 }
 
 } // namespace ebpf
