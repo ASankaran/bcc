@@ -47,6 +47,10 @@ struct DebugLineInfo {
 		return file_name + ":" + std::to_string(line_number);
 	}
 
+	friend bool operator==(const DebugLineInfo& x, const DebugLineInfo& y) {
+		return x.file_name == y.file_name && x.line_number == y.line_number;
+	}
+
 	std::string file_name;
 	int line_number;
 };
