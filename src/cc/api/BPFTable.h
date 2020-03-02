@@ -29,6 +29,7 @@
 #include "bcc_exception.h"
 #include "bcc_syms.h"
 #include "bpf_module.h"
+#include "common.h"
 #include "libbpf.h"
 #include "perf_reader.h"
 #include "table_desc.h"
@@ -314,7 +315,7 @@ class BPFStackTable : public BPFTableBase<int, stacktrace_t> {
   void clear_table_non_atomic();
   std::vector<uintptr_t> get_stack_addr(int stack_id);
   std::vector<std::string> get_stack_symbol(int stack_id, int pid);
-  std::vector<std::string> get_stack_debug(int stack_id, int pid);
+  std::vector<DebugLineInfo> get_stack_debug(int stack_id, int pid);
 
  private:
   bcc_symbol_option symbol_option_;

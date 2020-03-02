@@ -67,20 +67,17 @@ std::string get_pid_exe(pid_t pid) {
   return std::string(exe_path);
 }
 
-std::string get_debug_line_info(std::string module_name, uint64_t addr) {
+std::vector<DebugLineInfo> get_debug_line_info(std::string module_name, uint64_t addr) {
 	llvm::symbolize::LLVMSymbolizer::Options opts;
 	llvm::symbolize::LLVMSymbolizer symbolizer(opts);
 	auto res = symbolizer.symbolizeInlinedCode(module_name, addr);
 	if(!res) {
-		return "[UNKNOWN]:??";
+		return {DebugLineInfo("[UNKNOWN]", -1)};
 	}
 	auto line_info = res.get();
-	std::string debug_info("");
+	std::vector<DebugLineInfo> debug_info;
 	for(uint32_t i = 0; i < line_info.getNumberOfFrames(); i++) {
-		debug_info += line_info.getFrame(i).FileName + ":" + std::to_string(line_info.getFrame(i).Line);
-		if(i != line_info.getNumberOfFrames() - 1) {
-			debug_info += ";";
-		}
+		debug_info.emplace_back(line_info.getFrame(i).FileName, line_info.getFrame(i).Line);
 	}
 	return debug_info;
 }

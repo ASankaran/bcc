@@ -39,6 +39,18 @@ std::vector<int> get_possible_cpus();
 
 std::string get_pid_exe(pid_t pid);
 
-std::string get_debug_line_info(std::string module_name, uint64_t addr);
+struct DebugLineInfo {
+	DebugLineInfo(std::string file_name, int line_number)
+		: file_name(file_name), line_number(line_number){};
+
+	std::string to_string() {
+		return file_name + ":" + std::to_string(line_number);
+	}
+
+	std::string file_name;
+	int line_number;
+};
+
+std::vector<DebugLineInfo> get_debug_line_info(std::string module_name, uint64_t addr);
 
 }  // namespace ebpf
